@@ -156,9 +156,10 @@ whr_panel %>% tabyl(region, year)
 
 # Exploring datasets with *modelsummary*
 datasummary_skim(whr, type = "numeric", output = "kableExtra")
+datasummary_skim(whr, type = "numeric", output = "tinytable")
 
 # For categorical data:
-datasummary_skim(whr %>% select(region), type = "categorical", output = "kableExtra")
+datasummary_skim(whr %>% select(region), type = "categorical", output = "tinytable")
 
 # Exploring datasets with *modelsummary*
 datasummary(
