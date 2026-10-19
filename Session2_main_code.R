@@ -13,12 +13,9 @@ whr16 <- read_csv(here("DataWork", "DataSets", "Raw", "Un WHR", "WHR2016.csv"))
 whr17 <- read_csv(here("DataWork", "DataSets", "Raw", "Un WHR", "WHR2017.csv"))
 
 # The janitor Package: Clean Column Names Easily
-whr15 <- whr15 %>% 
-  clean_names() #<<
-whr16 <- whr16 %>% 
-  clean_names()
-whr17 <- whr17 %>% 
-  clean_names()
+whr15 <- whr15 %>% clean_names() 
+whr16 <- whr16 %>% clean_names()
+whr17 <- whr17 %>% clean_names()
 
 #------------------------------------------------
 # View(data)      # Open the dataset in a viewer
@@ -61,6 +58,11 @@ whr15 %>%
   filter(!region %in% c("Eastern Asia", "North America")) %>%  #<<
   head(5)
 
+region_exclusion <- filter(whr15, !region %in% c("Eastern Asia", "North America"))
+print(unique(region_exclusion$region))
+
+whr15 %>% filter(!region %in% c("Eastern Asia", "North America")) %>% pull(region) %>% unique() %>% print()
+
 # Creating variables
 whr15 <- whr15 %>% 
   mutate(year = 2015)
@@ -93,7 +95,7 @@ whr17 <- whr17 %>% #<<
 whr17 %>% 
   filter(is.na(region))
   
-
+any(regions$country="Taiwan")
 
 # Correcting country names before join
 whr17 <- read_csv(here("DataWork", "DataSets", "Raw", "Un WHR", "WHR2017.csv")) %>%
@@ -121,8 +123,9 @@ whr_panel %>% filter(is.na(region))
 nrow(whr_panel)
 
 regions %>% count(country) %>% filter(n > 1)
-anti_join(whr17, regions, by = "country") # unmatched country keys
+anti_join(whr17, regions, by = "country") # unmatched country keys, only in whr17 but not in regions
 
+semi_join(whr17,regions,by="country") # show the rows in whr15 that are matched with those in regions
 # Subsetting for the descriptive analysis
 whr <- whr_panel %>%
   filter(year == 2015) %>%
@@ -196,8 +199,21 @@ region_stats <- whr %>%
     .groups = "drop"
   )
 
+#if want to calculate the percentage, manually do it after summarise: 
+region_stats <- whr %>%
+  group_by(region) %>%
+  summarise(
+    n_observed = sum(!is.na(happiness_score)),
+    mean_happiness = mean(happiness_score, na.rm = TRUE),
+    median_happiness = median(happiness_score, na.rm = TRUE),
+    sd_happiness = sd(happiness_score, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    percentage=n_observed/sum(n_observed)
+  )
 
-# Standard error and confidence interval
+# Standard error and confidence interval(Normal Distribution)
 waiting <- c(12, 18, 20, 22, 24, 25, 28, 30, 35, 40)
 x_mean <- mean(waiting)
 x_sd <- sd(waiting)
@@ -217,6 +233,10 @@ c(z = z, p_value = p_value)
 c(lower = effect - 1.96 * se_effect,
   upper = effect + 1.96 * se_effect)
 
+# t-test CI
+t.test(waiting, conf.level=0.95)$conf.int
+
+
 # Loops and map
 
 # Map
@@ -224,6 +244,11 @@ c(lower = effect - 1.96 * se_effect,
 x <- c(1.2, 2.5, 9.1, 5.8)
 map(x, round)    # Returns a list; same as x %>% map(round)
 round(x)         # since R is vectorized, this also works
+
+result <-numeric(length(x))
+for (i in seq_along(x)) {
+  result[i] <-round(x[i])
+} # use loop to explicitly handle one element at a time
 
 
 # Explicit loop
