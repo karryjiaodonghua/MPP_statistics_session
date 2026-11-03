@@ -185,6 +185,11 @@ quick_latex(census_table, file="output/census_models.tex")
 
 
 # --------------------------------------------------
+coef_labels <- c("(Intercept)"="Constant",
+                 "economy_gdp_per_capita"="GDP contribution score",
+                 "health_life_expectancy"="Health contribution score",
+                 "freedom"="Freedom contribution score")
+
 modelsummary(models, output="kableExtra",
   coef_map=coef_labels, 
   vcov="HC1", conf_level=.95,
