@@ -43,6 +43,8 @@ census_sample <- census_sample %>%
   mutate(treat = sample(c(0, 1), size = n(), replace = TRUE,
                         prob = c(0.5, 0.5)))
 census_sample %>% count(treat)
+census_rct <- census%>% arrange(state)
+census_rct$treat <-factor(rep(c(0,1), each=25))
 
 # Complete randomization: shuffle 25 zeros and 25 ones, rep(..., each = 25) repeats each value 25 times.
 
@@ -103,7 +105,7 @@ merge(a, b, by = "id", all.y = TRUE) # Right join.
 
 # Geospatial data -------------------------------------------
 
-country_sf <- st_read(here("Dataworks","DataSets","Final","country.geojson"))
+country_sf <- st_read(here("Datawork","DataSets","Final","country.geojson"))
 head(country_sf)
 nrow(country_sf)
 st_crs(country_sf) # Coordinate reference system (CRS).
