@@ -161,6 +161,73 @@ modelsummary(
   fmt = 3)
 
 ##----------------------------------------------------------
+## DID with panel data
+DID_CO2 <- read_csv("DID_CO2.csv")
+
+did_CO2_intensity <- feols(
+  co2_intensity~ i(year, treatment, ref=2019) | country+year, 
+  cluster = ~country,
+  data = DID_CO2
+)
+summary(did_CO2_intensity)
+#plot the coefficient
+iplot(
+  did_CO2_intensity,
+  ref.line = 0,
+  xlab = "Period",
+  ylab = "Estimated effect on CO2 intensity",
+  main = "Difference-in-Differences"
+)
+
+
+#plot the overall trend
+did_plot_data <-DID_CO2 %>%
+  mutate (
+    group= if_else(treatment==1,"Treatment","Control")
+  ) %>%
+  group_by(year, group) %>%
+  summarize(mean_co2= mean(co2_intensity, na.rm= TRUE),
+            .groups="drop"
+  )
+
+ggplot(
+  did_plot_data,
+  aes (
+    x=year,
+    y=mean_co2,
+    color=group,
+    group=group
+  )
+) +
+  annotate(
+    "rect",
+    xmin = 2019.5,
+    xmax = 2024.5,
+    ymin = -Inf,
+    ymax = Inf,
+    alpha = 0.12
+  )+
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 3) +
+  geom_vline(
+    xintercept = 2020,
+    linetype = "dashed"
+  ) +
+  labs(
+    title = "DID test on CO2 Emissions per Capita",
+    x = "Year",
+    y = "Average CO2 emissions per capita",
+    color = NULL
+  ) +
+  scale_x_continuous(
+    breaks = 2016:2024
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    legend.position = "right",
+    panel.grid.minor = element_blank()
+  )
+##----------------------------------------------------------
 # Part 2: Regression Discontinuity
 
 
